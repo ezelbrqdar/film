@@ -1,4 +1,15 @@
 <?php
+// Core files
+require_once '../includes/db.php';
+
+// Establish database connection
+$conn = db_connect();
+if (!$conn) {
+    // Stop execution if the connection fails. A message is already handled by db_connect().
+    die(); 
+}
+
+// Now, include the header
 require_once 'partials/header.php';
 
 // Fetch stats
