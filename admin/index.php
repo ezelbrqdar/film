@@ -14,34 +14,40 @@ if (!file_exists('../includes/config.php')) {
 }
 
 require_once '../includes/config.php';
+require_once '../includes/db.php'; // Use the centralized db connection
 $error_message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-    if ($conn->connect_error) {
-        die("Connection failed: " . $conn->connect_error);
+    $conn = db_connect();
+    if (!$conn) {
+        // db_connect() already handles the error message, but we can have a fallback.
+        die("Database connection failed.");
     }
 
-    $stmt = $conn->prepare("SELECT password FROM users WHERE username = ? AND is_admin = 1");
+    // Corrected SQL: Use the 'admin' table and check only for username.
+    $stmt = $conn->prepare("SELECT password FROM admin WHERE username = ?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows === 1) {
-        $user = $result->fetch_assoc();
-        if (password_verify($password, $user['password'])) {
+        $admin_user = $result->fetch_assoc();
+        // Verify the password against the hashed password in the database
+        if (password_verify($password, $admin_user['password'])) {
             // Password is correct, start session
             $_SESSION['admin_logged_in'] = true;
             $_SESSION['admin_username'] = $username;
             header('Location: dashboard.php');
             exit;
         } else {
+            // Password does not match
             $error_message = "Invalid username or password.";
         }
     } else {
+        // Username not found
         $error_message = "Invalid username or password.";
     }
 
