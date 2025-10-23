@@ -24,6 +24,12 @@ function db_connect() {
         return false;
     }
 
+    // *** THE FIX ***
+    // Set the character set to utf8mb4 to properly handle Arabic and other special characters.
+    if (!$conn->set_charset("utf8mb4")) {
+        error_log("Error loading character set utf8mb4: " . $conn->error);
+    }
+
     return $conn;
 }
 ?>
