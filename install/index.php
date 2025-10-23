@@ -1,4 +1,9 @@
 <?php
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Check if config file already exists, if so, redirect.
 if (file_exists('../includes/config.php')) {
     header('Location: ../');
@@ -68,7 +73,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             }
                             return rmdir($dir);
                         }
-                        delete_directory(__DIR__); // Delete the current 'install' directory
+                        // Try to delete the install directory, but don't show an error if it fails
+                        @delete_directory(__DIR__);
                         header('Refresh: 3; URL=../index.php'); // Redirect after 3 seconds
                     } else {
                         $error = "Failed to create admin user: " . $stmt->error;
